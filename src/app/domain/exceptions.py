@@ -19,3 +19,11 @@ class InvalidUserIdError(DomainError):
 
 class InvalidVerificationCodeError(DomainError):
     """Raised when verification code is invalid."""
+
+
+class UserNotActiveError(DomainError):
+    """Raised when operation requires an active user."""
+
+
+class UserAlreadyActiveError(DomainError):
+    """Raised when trying to activate an already active user."""

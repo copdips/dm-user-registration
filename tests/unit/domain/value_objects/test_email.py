@@ -44,7 +44,7 @@ class TestEmail:
         [
             ("", "cannot be empty"),
             ("   ", "cannot be empty"),
-            ("userexample.com", "Invalid email format"),
+            ("toto.com", "Invalid email format"),
             ("user@", "Invalid email format"),
             ("@example.com", "Invalid email format"),
             ("user@example", "Invalid email format"),

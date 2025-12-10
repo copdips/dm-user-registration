@@ -36,6 +36,13 @@ Design and build this API. You are completely free to propose the architecture y
 
 ## Layout
 
-### Domain
-
-
+```plaintext
+├── src
+│   └── app
+│       ├── domain
+│       │   ├── exceptions.py
+│       │   └── value_objects
+│       │       ├── email.py
+│       │       └── password.py
+│       └── main.py
+```

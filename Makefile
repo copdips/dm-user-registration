@@ -10,3 +10,6 @@ test:
 	uv run pytest
 run:
 	uv run uvicorn ${API_FOLDER}.main:app --reload
+
+layout:
+	git ls-files | grep -v '__init__\.py$$' | tree --fromfile

@@ -11,3 +11,7 @@ class InvalidEmailError(DomainError):
 
 class InvalidPasswordError(DomainError):
     """Raised when password is invalid."""
+
+
+class InvalidUserIdError(DomainError):
+    """Raised when user ID is invalid."""

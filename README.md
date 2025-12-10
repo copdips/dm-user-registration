@@ -40,9 +40,15 @@ Design and build this API. You are completely free to propose the architecture y
 ├── src
 │   └── app
 │       ├── domain
+│       │   ├── entities
+│       │   │   └── user.py
+│       │   ├── events
+│       │   │   └── user_events.py
 │       │   ├── exceptions.py
 │       │   └── value_objects
 │       │       ├── email.py
-│       │       └── password.py
+│       │       ├── password.py
+│       │       ├── user_id.py
+│       │       └── verification_code.py
 │       └── main.py
 ```

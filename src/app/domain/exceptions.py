@@ -15,3 +15,7 @@ class InvalidPasswordError(DomainError):
 
 class InvalidUserIdError(DomainError):
     """Raised when user ID is invalid."""
+
+
+class InvalidVerificationCodeError(DomainError):
+    """Raised when verification code is invalid."""

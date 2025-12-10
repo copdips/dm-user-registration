@@ -33,3 +33,9 @@ Design and build this API. You are completely free to propose the architecture y
 * You should provide us the link to GitHub.
 * You should provide us the instructions to run your code and your tests. We should not install anything except docker/docker-compose to run you project.
 * You should provide us an architecture schema.
+
+## Layout
+
+### Domain
+
+

@@ -24,9 +24,9 @@ class RegisterUserUseCase:
         code_store: CodeStore,
         event_publisher: EventPublisher,
     ) -> None:
-        self._user_repository = user_repository
-        self._code_store = code_store
-        self._event_publisher = event_publisher
+        self._user_repository: UserRepository = user_repository
+        self._code_store: CodeStore = code_store
+        self._event_publisher: EventPublisher = event_publisher
 
     async def execute(self, request: RegisterUserRequest) -> RegisterUserResponse:
         email = request.email

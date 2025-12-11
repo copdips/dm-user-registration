@@ -10,7 +10,6 @@ from app.application.exceptions import (
 from app.application.ports.code_store import CodeStore
 from app.application.ports.event_publisher import EventPublisher
 from app.application.ports.user_repository import UserRepository
-from app.domain import User
 
 
 class ActivateUserUseCase:
@@ -30,16 +29,16 @@ class ActivateUserUseCase:
         code_store: CodeStore,
         event_publisher: EventPublisher,
     ) -> None:
-        self._user_repository = user_repository
-        self._code_store = code_store
-        self._event_publisher = event_publisher
+        self._user_repository: UserRepository = user_repository
+        self._code_store: CodeStore = code_store
+        self._event_publisher: EventPublisher = event_publisher
 
     async def execute(self, request: ActivateUserRequest) -> ActivateUserResponse:
         email = request.email
         password = request.password
 
         user = await self._user_repository.get_by_email(email)
-        if not isinstance(user, User):
+        if not user:
             raise UserNotFoundError(email.value)
 
         if not user.verify_password(password):

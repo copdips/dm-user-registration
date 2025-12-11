@@ -26,6 +26,18 @@ class TestRegisterUserUseCase:
     def user_repository(self) -> FakeUserRepository:
         return FakeUserRepository()
 
+    @pytest.fixture(scope="class")
+    def email(self) -> Email:
+        return Email("user@example.com")
+
+    @pytest.fixture(scope="class")
+    def password(self) -> Password:
+        return Password.create("securepassword123")
+
+    @pytest.fixture(scope="class")
+    def register_request(self, email: Email, password: Password) -> RegisterUserRequest:
+        return RegisterUserRequest(email, password)
+
     @pytest.fixture
     def use_case(
         self,
@@ -42,15 +54,12 @@ class TestRegisterUserUseCase:
     async def test_register_user_success(
         self,
         use_case: RegisterUserUseCase,
+        register_request: RegisterUserRequest,
+        email: Email,
     ) -> None:
-        request = RegisterUserRequest(
-            Email("user@example.com"),
-            Password.create("securepassword123"),
-        )
+        response = await use_case.execute(register_request)
 
-        response = await use_case.execute(request)
-
-        assert response.email == Email("user@example.com")
+        assert response.email == email
         assert response.user_id is not None
         assert "verification code" in response.message.lower()
 
@@ -58,15 +67,12 @@ class TestRegisterUserUseCase:
         self,
         use_case: RegisterUserUseCase,
         user_repository: FakeUserRepository,
+        register_request: RegisterUserRequest,
+        email: Email,
     ) -> None:
-        request = RegisterUserRequest(
-            Email("user@example.com"),
-            Password.create("securepassword123"),
-        )
+        response = await use_case.execute(register_request)
 
-        response = await use_case.execute(request)
-
-        user = await user_repository.get_by_email(Email("user@example.com"))
+        user = await user_repository.get_by_email(email)
         assert user is not None
         assert user.id == response.user_id
 
@@ -74,28 +80,21 @@ class TestRegisterUserUseCase:
         self,
         use_case: RegisterUserUseCase,
         code_store: FakeCodeStore,
+        register_request: RegisterUserRequest,
+        email: Email,
     ) -> None:
-        request = RegisterUserRequest(
-            Email("user@example.com"),
-            Password.create("securepassword123"),
-        )
+        await use_case.execute(register_request)
 
-        await use_case.execute(request)
-
-        code = await code_store.get(Email("user@example.com"))
+        code = await code_store.get(email)
         assert isinstance(code, VerificationCode)
 
     async def test_register_user_publishes_event(
         self,
         use_case: RegisterUserUseCase,
         event_publisher: FakeEventPublisher,
+        register_request: RegisterUserRequest,
     ) -> None:
-        request = RegisterUserRequest(
-            Email("user@example.com"),
-            Password.create("securepassword123"),
-        )
-
-        await use_case.execute(request)
+        await use_case.execute(register_request)
 
         assert len(event_publisher.published_events) == 1
         event = event_publisher.published_events[0]
@@ -106,34 +105,29 @@ class TestRegisterUserUseCase:
         self,
         use_case: RegisterUserUseCase,
         user_repository: FakeUserRepository,
+        email: Email,
+        password: Password,
+        register_request: RegisterUserRequest,
     ) -> None:
         duplicate_user = User.create(
-            email=Email("user@example.com"),
-            password=Password.create("securepassword123"),
+            email=email,
+            password=password,
         )
         await user_repository.save(duplicate_user)
 
-        request = RegisterUserRequest(
-            Email("user@example.com"),
-            Password.create("securepassword123"),
-        )
-
         with pytest.raises(UserAlreadyExistsError):
-            await use_case.execute(request)
+            await use_case.execute(register_request)
 
     async def test_register_user_hashes_password(
         self,
         use_case: RegisterUserUseCase,
         user_repository: FakeUserRepository,
+        register_request: RegisterUserRequest,
+        email: Email,
     ) -> None:
-        request = RegisterUserRequest(
-            Email("user@example.com"),
-            Password.create("securepassword123"),
-        )
+        await use_case.execute(register_request)
 
-        await use_case.execute(request)
-
-        user = await user_repository.get_by_email(Email("user@example.com"))
+        user = await user_repository.get_by_email(email)
         assert user is not None
         assert user.password.hashed_value != "securepassword123"
         assert user.verify_password("securepassword123") is True

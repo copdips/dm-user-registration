@@ -8,6 +8,9 @@ lint:
 
 test:
 	uv run pytest
+
+fast-test:
+	uv run pytest --ignore=tests/unit/domain/value_objects/test_password.py --ignore=tests/unit/domain/entities/test_user.py
 run:
 	uv run uvicorn ${API_FOLDER}.main:app --reload
 

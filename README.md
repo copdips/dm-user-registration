@@ -39,10 +39,23 @@ Design and build this API. You are completely free to propose the architecture y
 ```plaintext
 ├── src
 │   └── app
+│       ├── application
+│       │   ├── dto
+│       │   │   └── user_dto.py
+│       │   ├── exceptions.py
+│       │   ├── ports
+│       │   │   ├── code_store.py
+│       │   │   ├── event_publisher.py
+│       │   │   └── user_repository.py
+│       │   └── use_cases
+│       │       ├── activate_user.py
+│       │       ├── register_user.py
+│       │       └── resend_code.py
 │       ├── domain
 │       │   ├── entities
 │       │   │   └── user.py
 │       │   ├── events
+│       │   │   ├── base.py
 │       │   │   └── user_events.py
 │       │   ├── exceptions.py
 │       │   └── value_objects

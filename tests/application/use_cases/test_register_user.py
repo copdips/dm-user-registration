@@ -15,30 +15,6 @@ class TestRegisterUserUseCase:
     """Tests for RegisterUserUseCase."""
 
     @pytest.fixture
-    def code_store(self) -> FakeCodeStore:
-        return FakeCodeStore()
-
-    @pytest.fixture
-    def event_publisher(self) -> FakeEventPublisher:
-        return FakeEventPublisher()
-
-    @pytest.fixture
-    def user_repository(self) -> FakeUserRepository:
-        return FakeUserRepository()
-
-    @pytest.fixture(scope="class")
-    def email(self) -> Email:
-        return Email("user@example.com")
-
-    @pytest.fixture(scope="class")
-    def password(self) -> Password:
-        return Password.create("securepassword123")
-
-    @pytest.fixture(scope="class")
-    def register_request(self, email: Email, password: Password) -> RegisterUserRequest:
-        return RegisterUserRequest(email, password)
-
-    @pytest.fixture
     def use_case(
         self,
         user_repository: FakeUserRepository,

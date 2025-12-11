@@ -56,10 +56,10 @@ repos:
         language: system
         types_or: [python, pyi, jupyter]
         args: []
-      # - id: pytest
-      #   name: pytest
-      #   # types: [python]
-      #   entry: uv run pytest
-      #   language: system
-      #   pass_filenames: false
-      #   always_run: true
+      - id: pytest
+        name: pytest
+        # types: [python]
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -41,4 +41,4 @@ class VerificationCode:
 
     def matches(self, other: str) -> bool:
         """Check if the provided code matches."""
-        return secrets.compare_digest(self.value, other)
+        return self.value == other

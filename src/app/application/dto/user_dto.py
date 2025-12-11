@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from app.domain import Email, Password, UserId
+from app.domain import Email, Password, UserId, VerificationCode
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,3 +20,21 @@ class RegisterUserResponse:
     user_id: UserId
     email: Email
     message: str
+
+
+@dataclass(frozen=True, slots=True)
+class ActivateUserRequest:
+    """Request DTO for user activation"""
+
+    email: Email
+    password: str
+    code: VerificationCode
+
+
+@dataclass(frozen=True, slots=True)
+class ActivateUserResponse:
+    """Response DTO for user activation"""
+
+    user_id: UserId
+    email: Email
+    is_active: bool

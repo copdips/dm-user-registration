@@ -6,11 +6,12 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from app.domain.events.user_events import DomainEvent, UserActivated, UserRegistered
+from app.domain.events.user_events import UserActivated, UserRegistered
 from app.domain.exceptions import UserAlreadyActiveError
 from app.domain.value_objects.user_id import UserId
 
 if TYPE_CHECKING:
+    from app.domain.events.base import DomainEvent
     from app.domain.value_objects.email import Email
     from app.domain.value_objects.password import Password
 

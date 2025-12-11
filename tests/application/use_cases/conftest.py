@@ -1,6 +1,10 @@
 import pytest
 
-from app.application.dto.user_dto import ActivateUserRequest, RegisterUserRequest
+from app.application.dto.user_dto import (
+    ActivateUserRequest,
+    RegisterUserRequest,
+    ResendCodeRequest,
+)
 from app.domain import Email, Password, VerificationCode
 from tests.fakes.fake_code_store import FakeCodeStore
 from tests.fakes.fake_event_publisher import FakeEventPublisher
@@ -47,3 +51,8 @@ def activate_request(
     email: Email, password: str, code: VerificationCode
 ) -> ActivateUserRequest:
     return ActivateUserRequest(email, password, code)
+
+
+@pytest.fixture(scope="module")
+def resend_code_request(email: Email, password: str) -> ResendCodeRequest:
+    return ResendCodeRequest(email, password)

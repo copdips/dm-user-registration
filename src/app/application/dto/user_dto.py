@@ -38,3 +38,19 @@ class ActivateUserResponse:
     user_id: UserId
     email: Email
     is_active: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ResendCodeRequest:
+    """Request DTO for resending verification code"""
+
+    email: Email
+    password: str
+
+
+@dataclass(frozen=True, slots=True)
+class ResendCodeResponse:
+    """Response DTO for resending verification code"""
+
+    email: Email
+    message: str

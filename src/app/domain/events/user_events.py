@@ -21,3 +21,11 @@ class UserActivated(DomainEvent):
 
     user_id: UserId
     email: Email
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class UserNewVerificationCodeCreated(DomainEvent):
+    """Event raised when a new verification code is created for a user."""
+
+    user_id: UserId
+    email: Email

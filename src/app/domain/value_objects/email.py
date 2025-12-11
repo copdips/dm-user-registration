@@ -29,3 +29,6 @@ class Email:
         if not _EMAIL_PATTERN.match(self.value):
             msg = f"Invalid email format: {self.value}"
             raise InvalidEmailError(msg)
+
+    def __str__(self) -> str:
+        return self.value

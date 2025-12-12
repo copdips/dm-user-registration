@@ -42,3 +42,6 @@ class VerificationCode:
     def matches(self, other: str) -> bool:
         """Check if the provided code matches."""
         return self.value == other
+
+    def __str__(self) -> str:
+        return self.value

@@ -17,8 +17,11 @@ run:
 layout:
 	git ls-files | grep -v '__init__\.py$$' | tree --fromfile
 
-run-docker-compose:
+start-docker-compose:
 	docker compose build && docker compose up -d
+
+stop-docker-compose:
+	docker compose down
 
 init-db:
 	PGPASSWORD=password psql -h localhost -U user -d registration -f scripts/init_db.sql

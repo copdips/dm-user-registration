@@ -3,6 +3,7 @@ SHELL=/bin/bash
 API_FOLDER=app
 
 install:
+	@command -v uv >/dev/null 2>&1 || { echo "uv is required. Install instructions: https://docs.astral.sh/uv/getting-started/installation/"; exit 1; }
 	uv sync
 	pre-commit install
 
@@ -13,14 +14,15 @@ lint:
 test-unit:
 	uv run pytest tests/unit
 
-test-integration:
+test-integration: start-docker-compose
 	uv run pytest tests/integration
 
 test: test-unit test-integration
 
-fast-test:
+fast-test: start-docker-compose
 	uv run pytest --ignore=tests/unit/domain/value_objects/test_password.py --ignore=tests/unit/domain/entities/test_user.py
-run:
+
+run: start-docker-compose
 	uv run uvicorn ${API_FOLDER}.main:app --reload
 
 layout:
@@ -32,8 +34,8 @@ start-docker-compose:
 stop-docker-compose:
 	docker compose down
 
-init-db:
+init-db: start-docker-compose
 	PGPASSWORD=password psql -h localhost -U user -d registration -f scripts/init_db.sql
 
-sql-shell:
+sql-shell: start-docker-compose
 	PGPASSWORD=password psql -h localhost -U user -d registration

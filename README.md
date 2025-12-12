@@ -126,10 +126,10 @@ Design and build this API. You are completely free to propose the architecture y
 
 1. Install: `make install`
 2. Run unit test (does not require Postgres and Redis running): `make test-unit`
-3. Start Postgres and Redis: `make start-docker-compose`
+3. Start Postgres and Redis: `make start-docker-compose`, optional step, will be automatically started when running integration tests or application.
 4. Run integration test: `make test-integration`
-5. Run full tests (need Postgres and Redis running): `make test`
-6. Run application (need Postgres and Redis running): `make run`, and API will be available at `http://localhost:8000/docs`
+5. Run full tests: `make test`
+6. Run application: `make run`, and API will be available at `http://localhost:8000/docs`
 7. Stop Postgres and Redis: `make stop-docker-compose`
 
 > [!NOTE]

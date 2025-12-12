@@ -17,3 +17,16 @@ class RegisterResponseSchema(BaseModel):
         "User registered. "
         "Please check your email for verification code to activate your account."
     )
+
+
+class ActivateRequestSchema(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=64)
+    code: str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$")
+
+
+class ActivateResponseSchema(BaseModel):
+    user_id: UUID
+    email: EmailStr
+    is_active: bool = True
+    message: str = "Account activated successfully."

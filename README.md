@@ -6,6 +6,9 @@
   - [What do we expect?](#what-do-we-expect)
   - [Layout](#layout)
   - [Usage](#usage)
+    - [Install](#install)
+    - [Test](#test)
+    - [Run application](#run-application)
 
 ## Context
 
@@ -44,6 +47,7 @@ Design and build this API. You are completely free to propose the architecture y
 ## Layout
 
 ```plaintext
+├── .env.example
 ├── scripts
 │   └── init_db.sql
 ├── src
@@ -124,19 +128,45 @@ Design and build this API. You are completely free to propose the architecture y
 
 ## Usage
 
-1. Install: `make install`
-2. Run unit test (does not require Postgres and Redis running): `make test-unit`
-3. Start Postgres and Redis: `make start-docker-compose`, optional step, will be automatically started when running integration tests or application.
-4. Run integration test: `make test-integration`
-5. Run full tests: `make test`
-6. Init DB: `make init-db` (only need to run once)
-7. Run application: `make run`, and API will be available at `http://localhost:8000/docs`
-8. Stop Postgres and Redis: `make stop-docker-compose`
+### Install
+
+```bash
+make install
+```
+
+### Test
+
+```bash
+# Run unit test (does not require Postgres and Redis running):
+make test-unit
+
+# Run integration test (will start Postgres and Redis via docker-compose automatically):
+make test-integration
+
+# Run full tests:
+make test
+```
+
+### Run application
+
+```bash
+# Init DB: (only need to run once)
+make init-db
+
+# Create .env file from .env.example: (only need to run once)
+cp .env.example .env
+
+# Run application:
+make run
+
+# Stop Postgres and Redis:
+make stop-docker-compose
+```
 
 > [!NOTE]
 >
-> - Current implementation for event publisher just prints to console, but it would be nice to use RabbitMQ, but need more time to implement it.
-> - SQL operations are not using transactions for simplicity, will be added later.
-> - request and response are not logged, but can be added later with middleware.
-> - logging will be added later.
-> - x-correlation-id header can be added later for tracing.
+> - [ ] Current implementation for event publisher just prints to console, but it would be nice to use RabbitMQ, but need more time to implement it.
+> - [ ] SQL operations are not using transactions for simplicity, will be added later.
+> - [ ] request and response are not logged, but can be added later with middleware.
+> - [ ] logging will be added later.
+> - [ ] x-correlation-id header can be added later for tracing.

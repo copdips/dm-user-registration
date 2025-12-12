@@ -30,3 +30,13 @@ class ActivateResponseSchema(BaseModel):
     email: EmailStr
     is_active: bool = True
     message: str = "Account activated successfully."
+
+
+class ResendCodeRequestSchema(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=64)
+
+
+class ResendCodeResponseSchema(BaseModel):
+    email: EmailStr
+    message: str = "New verification code has been sent"

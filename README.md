@@ -97,10 +97,6 @@ Design and build this API. You are completely free to propose the architecture y
 │           └── schemas
 │               └── users.py
 ├── tests
-│   ├── fakes
-│   │   ├── fake_code_store.py
-│   │   ├── fake_event_publisher.py
-│   │   └── fake_user_repository.py
 │   ├── integration
 │   │   ├── conftest.py
 │   │   └── test_v1_users.py
@@ -111,15 +107,19 @@ Design and build this API. You are completely free to propose the architecture y
 │       │       ├── test_activate_user.py
 │       │       ├── test_register_user.py
 │       │       └── test_resend_code.py
-│       └── domain
-│           ├── entities
-│           │   ├── conftest.py
-│           │   └── test_user.py
-│           └── value_objects
-│               ├── test_email.py
-│               ├── test_password.py
-│               ├── test_user_id.py
-│               └── test_verification_code.py
+│       ├── domain
+│       │   ├── entities
+│       │   │   ├── conftest.py
+│       │   │   └── test_user.py
+│       │   └── value_objects
+│       │       ├── test_email.py
+│       │       ├── test_password.py
+│       │       ├── test_user_id.py
+│       │       └── test_verification_code.py
+│       └── fakes
+│           ├── fake_code_store.py
+│           ├── fake_event_publisher.py
+│           └── fake_user_repository.py
 ```
 
 ## Usage

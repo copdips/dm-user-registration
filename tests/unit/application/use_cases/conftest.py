@@ -6,9 +6,9 @@ from app.application.dto.user_dto import (
     ResendCodeRequest,
 )
 from app.domain import Email, Password, VerificationCode
-from tests.fakes.fake_code_store import FakeCodeStore
-from tests.fakes.fake_event_publisher import FakeEventPublisher
-from tests.fakes.fake_user_repository import FakeUserRepository
+from tests.unit.fakes.fake_code_store import FakeCodeStore
+from tests.unit.fakes.fake_event_publisher import FakeEventPublisher
+from tests.unit.fakes.fake_user_repository import FakeUserRepository
 
 
 @pytest.fixture

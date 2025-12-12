@@ -11,9 +11,9 @@ from app.application.exceptions import (
 )
 from app.application.use_cases.activate_user import ActivateUserUseCase
 from app.domain import Email, Password, User, UserActivated, VerificationCode
-from tests.fakes.fake_code_store import FakeCodeStore
-from tests.fakes.fake_event_publisher import FakeEventPublisher
-from tests.fakes.fake_user_repository import FakeUserRepository
+from tests.unit.fakes.fake_code_store import FakeCodeStore
+from tests.unit.fakes.fake_event_publisher import FakeEventPublisher
+from tests.unit.fakes.fake_user_repository import FakeUserRepository
 
 
 class TestActivateUserUseCase:

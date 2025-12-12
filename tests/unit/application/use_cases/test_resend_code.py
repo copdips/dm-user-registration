@@ -12,9 +12,9 @@ from app.domain import (
     UserNewVerificationCodeCreated,
     VerificationCode,
 )
-from tests.fakes.fake_code_store import FakeCodeStore
-from tests.fakes.fake_event_publisher import FakeEventPublisher
-from tests.fakes.fake_user_repository import FakeUserRepository
+from tests.unit.fakes.fake_code_store import FakeCodeStore
+from tests.unit.fakes.fake_event_publisher import FakeEventPublisher
+from tests.unit.fakes.fake_user_repository import FakeUserRepository
 
 
 class TestResendCodeUseCase:

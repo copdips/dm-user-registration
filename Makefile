@@ -2,12 +2,21 @@
 SHELL=/bin/bash
 API_FOLDER=app
 
+install:
+	uv sync
+	pre-commit install
+
 lint:
 	uv run pre-commit autoupdate
 	uv run pre-commit run --files $(git ls-files -m -o --exclude-standard)
 
-test:
-	uv run pytest
+test-unit:
+	uv run pytest tests/unit
+
+test-integration:
+	uv run pytest tests/integration
+
+test: test-unit test-integration
 
 fast-test:
 	uv run pytest --ignore=tests/unit/domain/value_objects/test_password.py --ignore=tests/unit/domain/entities/test_user.py

@@ -3,7 +3,9 @@
 - [Building a user registration API](#building-a-user-registration-api)
   - [Context](#context)
   - [Specifications](#specifications)
-  - [What do we expect?](#what-do-we-expect)
+  - [Architecture](#architecture)
+    - [High level architecture](#high-level-architecture)
+    - [Lower level architecture](#lower-level-architecture)
   - [Layout](#layout)
   - [Usage](#usage)
     - [Install](#install)
@@ -29,20 +31,40 @@ The API must support the following use cases:
 
 Design and build this API. You are completely free to propose the architecture you want.
 
-## What do we expect?
+## Architecture
 
-- Python language is required.
+### High level architecture
 
-- We expect to have a level of code quality which could go to production.
-- Using frameworks is allowed only for routing, dependency injection, event dispatcher, db connection. Don't use magic (for example SQLAlchemy, even without its ORM)! We want to see **your** implementation.
-- Use the DBMS you want (except SQLite).
-- Consider the SMTP server as a third party service offering an HTTP API. You can mock the call, use a local SMTP server running in a container, or simply print the 4 digits in console. But do not forget in your implementation that **it is a third party service**.
-- Your code should be tested.
-- Your application has to run within a docker containers.
-- You can use AI to help you, but in a smart way. However, please make iterative commits as we analyze them to understand your development reasoning (not all the code in 1 or 2 commits).
-- You should provide us the link to GitHub.
-- You should provide us the instructions to run your code and your tests. We should not install anything except docker/docker-compose to run you project.
-- You should provide us an architecture schema.
+```mermaid
+flowchart LR
+  User["Client"]
+  API["User Registration API"]
+  DB["PostgreSQL<br/>users table"]
+  Cache["Redis<br/>verification codes (TTL)"]
+  Events["Console Event Publisher<br/>simulated email send"]
+  User --> API
+  API --> DB
+  API --> Cache
+  API --> Events
+```
+
+### Lower level architecture
+
+```mermaid
+flowchart TD
+  Client["Client"]
+  Client --> API["Presentation layer<br/>FastAPI routers"]
+  API --> Container["DI container wiring"]
+  Container --> UseCases["Application layer<br/>use cases<br/>register / activate / resend-core"]
+  UseCases --> Domain["Domain layer<br/>User, Events"]
+  UseCases --> Repo["UserRepository port"]
+  UseCases --> Store["CodeStore port"]
+  UseCases --> Pub["EventPublisher port"]
+  Repo --> Postgres["(Postgres users table<br/>via asyncpg repo)"]
+  Store --> Redis["(Redis TTL verification codes)"]
+  Pub --> Console["Console event publisher<br/>simulated email sending"]
+  Store -.-> Pub
+```
 
 ## Layout
 
@@ -159,6 +181,9 @@ cp .env.example .env
 # Run application:
 make run
 
+# Now you can access the API docs at:
+# http://localhost:8000/docs
+
 # Stop Postgres and Redis:
 make stop-docker-compose
 ```
@@ -167,6 +192,5 @@ make stop-docker-compose
 >
 > - [ ] Current implementation for event publisher just prints to console, but it would be nice to use RabbitMQ, but need more time to implement it.
 > - [ ] SQL operations are not using transactions for simplicity, will be added later.
+> - [ ] `BasicAuth` is not used yet.
 > - [ ] request and response are not logged, but can be added later with middleware.
-> - [ ] logging will be added later.
-> - [ ] x-correlation-id header can be added later for tracing.

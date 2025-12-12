@@ -9,6 +9,7 @@ dependencies = [
     "bcrypt>=5.0.0",
     "fastapi[all]>=0.124.2",
     "python-dotenv>=1.2.1",
+    "redis>=7.1.0",
 ]
 
 [dependency-groups]

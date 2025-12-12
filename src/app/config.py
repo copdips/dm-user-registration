@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     # Database
     database_url: str = Field(default=...)
 
+    # Redis
+    redis_url: str = Field(default=...)
+
     # Verification code
     verification_code_ttl_seconds: int = 60
 

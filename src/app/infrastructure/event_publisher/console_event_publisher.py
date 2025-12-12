@@ -1,12 +1,12 @@
 """Console implementation of EventPublisher port."""
 
+from app.application.ports.code_store import CodeStore
 from app.domain import (
     DomainEvent,
     UserActivated,
     UserNewVerificationCodeCreated,
     UserRegistered,
 )
-from app.infrastructure.code_store.memory_code_store import MemoryCodeStore
 
 
 class ConsoleEventPublisher:
@@ -14,8 +14,8 @@ class ConsoleEventPublisher:
     Console implementation of EventPublisher port.
     """
 
-    def __init__(self, code_store: MemoryCodeStore) -> None:
-        self._code_store: MemoryCodeStore = code_store
+    def __init__(self, code_store: CodeStore) -> None:
+        self._code_store: CodeStore = code_store
 
     async def publish(self, event: DomainEvent) -> None:
         if isinstance(event, (UserRegistered, UserNewVerificationCodeCreated)):

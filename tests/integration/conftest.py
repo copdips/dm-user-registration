@@ -2,6 +2,7 @@ from collections.abc import AsyncGenerator
 
 import asyncpg
 import pytest
+import redis.asyncio as redis
 from httpx import ASGITransport, AsyncClient
 
 from app.config import settings
@@ -16,6 +17,18 @@ async def reset_postgres() -> None:
         await conn.execute("TRUNCATE TABLE users RESTART IDENTITY CASCADE;")
     finally:
         await conn.close()
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def reset_redis() -> None:
+    client = redis.from_url(
+        settings.redis_url,
+        decode_responses=True,
+    )
+    try:
+        await client.flushdb()
+    finally:
+        await client.aclose()
 
 
 @pytest.fixture

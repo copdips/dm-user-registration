@@ -9,7 +9,7 @@ from app.application.exceptions import (
 )
 from app.application.ports.code_store import CodeStore
 from app.application.ports.event_publisher import EventPublisher
-from app.application.ports.user_repository import UserRepository
+from app.application.ports.unit_of_work import UnitOfWork
 
 
 class ActivateUserUseCase:
@@ -25,11 +25,11 @@ class ActivateUserUseCase:
 
     def __init__(
         self,
-        user_repository: UserRepository,
+        uow: UnitOfWork,
         code_store: CodeStore,
         event_publisher: EventPublisher,
     ) -> None:
-        self._user_repository: UserRepository = user_repository
+        self._uow: UnitOfWork = uow
         self._code_store: CodeStore = code_store
         self._event_publisher: EventPublisher = event_publisher
 
@@ -37,28 +37,28 @@ class ActivateUserUseCase:
         email = request.email
         password = request.password
 
-        user = await self._user_repository.get_by_email(email)
-        if not user:
-            raise UserNotFoundError(email.value)
+        async with self._uow:
+            user = await self._uow.user_repository.get_by_email(email)
+            if not user:
+                raise UserNotFoundError(email.value)
 
-        if not user.verify_password(password):
-            raise InvalidCredentialsError(email.value)
+            if not user.verify_password(password):
+                raise InvalidCredentialsError(email.value)
 
-        stored_code = await self._code_store.get(email)
-        if stored_code is None:
-            raise VerificationCodeExpiredError(email.value)
+            stored_code = await self._code_store.get(email)
+            if stored_code is None:
+                raise VerificationCodeExpiredError(email.value)
 
-        if not stored_code.matches(request.code.value):
-            raise VerificationCodeInvalidError(email.value)
+            if not stored_code.matches(request.code.value):
+                raise VerificationCodeInvalidError(email.value)
 
-        user.activate()
+            user.activate()
+            await self._uow.user_repository.save(user)
 
-        await self._code_store.delete(email)
+            await self._code_store.delete(email)
 
-        await self._user_repository.save(user)
-
-        events = user.collect_events()
-        await self._event_publisher.publish_all(events)
+            events = user.collect_events()
+            await self._event_publisher.publish_all(events)
 
         return ActivateUserResponse(
             user_id=user.id,

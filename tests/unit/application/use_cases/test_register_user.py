@@ -8,7 +8,7 @@ from app.application.use_cases.register_user import RegisterUserUseCase
 from app.domain import Email, Password, User, UserRegistered, VerificationCode
 from tests.unit.fakes.fake_code_store import FakeCodeStore
 from tests.unit.fakes.fake_event_publisher import FakeEventPublisher
-from tests.unit.fakes.fake_user_repository import FakeUserRepository
+from tests.unit.fakes.fake_unit_of_work import FakeUnitOfWork
 
 
 class TestRegisterUserUseCase:
@@ -17,12 +17,12 @@ class TestRegisterUserUseCase:
     @pytest.fixture
     def use_case(
         self,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         code_store: FakeCodeStore,
         event_publisher: FakeEventPublisher,
     ) -> RegisterUserUseCase:
         return RegisterUserUseCase(
-            user_repository=user_repository,
+            uow=uow,
             code_store=code_store,
             event_publisher=event_publisher,
         )
@@ -42,13 +42,13 @@ class TestRegisterUserUseCase:
     async def test_register_user_saves_to_repository(
         self,
         use_case: RegisterUserUseCase,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         register_request: RegisterUserRequest,
         email: Email,
     ) -> None:
         response = await use_case.execute(register_request)
 
-        user = await user_repository.get_by_email(email)
+        user = await uow.user_repository.get_by_email(email)
         assert user is not None
         assert user.id == response.user_id
 
@@ -80,7 +80,7 @@ class TestRegisterUserUseCase:
     async def test_register_user_already_exists_raises_error(
         self,
         use_case: RegisterUserUseCase,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         email: Email,
         password: Password,
         register_request: RegisterUserRequest,
@@ -89,7 +89,7 @@ class TestRegisterUserUseCase:
             email=email,
             password=password,
         )
-        await user_repository.save(duplicate_user)
+        await uow.user_repository.save(duplicate_user)
 
         with pytest.raises(UserAlreadyExistsError):
             await use_case.execute(register_request)
@@ -97,13 +97,13 @@ class TestRegisterUserUseCase:
     async def test_register_user_hashes_password(
         self,
         use_case: RegisterUserUseCase,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         register_request: RegisterUserRequest,
         email: Email,
     ) -> None:
         await use_case.execute(register_request)
 
-        user = await user_repository.get_by_email(email)
+        user = await uow.user_repository.get_by_email(email)
         assert user is not None
         assert user.password.hashed_value != "securepassword123"
         assert user.verify_password("securepassword123") is True

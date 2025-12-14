@@ -13,7 +13,7 @@ from app.application.use_cases.activate_user import ActivateUserUseCase
 from app.domain import Email, Password, User, UserActivated, VerificationCode
 from tests.unit.fakes.fake_code_store import FakeCodeStore
 from tests.unit.fakes.fake_event_publisher import FakeEventPublisher
-from tests.unit.fakes.fake_user_repository import FakeUserRepository
+from tests.unit.fakes.fake_unit_of_work import FakeUnitOfWork
 
 
 class TestActivateUserUseCase:
@@ -22,12 +22,12 @@ class TestActivateUserUseCase:
     @pytest.fixture
     def use_case(
         self,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         code_store: FakeCodeStore,
         event_publisher: FakeEventPublisher,
     ) -> ActivateUserUseCase:
         return ActivateUserUseCase(
-            user_repository=user_repository,
+            uow=uow,
             code_store=code_store,
             event_publisher=event_publisher,
         )
@@ -35,7 +35,7 @@ class TestActivateUserUseCase:
     @pytest.fixture
     async def registered_user(
         self,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         code_store: FakeCodeStore,
         code: VerificationCode,
     ) -> User:
@@ -46,7 +46,7 @@ class TestActivateUserUseCase:
         )
         await code_store.save(user.email, code)
         user.collect_events()  # Clear creation event
-        await user_repository.save(user)
+        await uow.user_repository.save(user)
         return user
 
     async def test_activate_user_success(
@@ -65,11 +65,11 @@ class TestActivateUserUseCase:
         self,
         use_case: ActivateUserUseCase,
         activate_request: ActivateUserRequest,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         registered_user: User,  # noqa: ARG002 Unused method argument
     ) -> None:
         await use_case.execute(activate_request)
-        user = await user_repository.get_by_email(activate_request.email)
+        user = await uow.user_repository.get_by_email(activate_request.email)
         assert user is not None
         assert user.is_active is True
 

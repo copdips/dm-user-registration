@@ -8,7 +8,7 @@ from app.container import container
 
 def register_user_use_case() -> RegisterUserUseCase:
     return RegisterUserUseCase(
-        user_repository=container.user_repository(),
+        uow=container.uow(),
         code_store=container.code_store,
         event_publisher=container.event_publisher,
     )
@@ -16,7 +16,7 @@ def register_user_use_case() -> RegisterUserUseCase:
 
 def activate_user_use_case() -> ActivateUserUseCase:
     return ActivateUserUseCase(
-        user_repository=container.user_repository(),
+        uow=container.uow(),
         code_store=container.code_store,
         event_publisher=container.event_publisher,
     )
@@ -24,7 +24,7 @@ def activate_user_use_case() -> ActivateUserUseCase:
 
 def resend_code_use_case() -> ResendCodeUseCase:
     return ResendCodeUseCase(
-        user_repository=container.user_repository(),
+        uow=container.uow(),
         code_store=container.code_store,
         event_publisher=container.event_publisher,
     )

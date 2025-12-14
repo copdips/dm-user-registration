@@ -8,7 +8,13 @@ from app.application.dto.user_dto import (
 from app.domain import Email, Password, VerificationCode
 from tests.unit.fakes.fake_code_store import FakeCodeStore
 from tests.unit.fakes.fake_event_publisher import FakeEventPublisher
+from tests.unit.fakes.fake_unit_of_work import FakeUnitOfWork
 from tests.unit.fakes.fake_user_repository import FakeUserRepository
+
+
+@pytest.fixture
+def uow() -> FakeUnitOfWork:
+    return FakeUnitOfWork()
 
 
 @pytest.fixture

@@ -191,6 +191,6 @@ make stop-docker-compose
 > [!NOTE]
 >
 > - [ ] Current implementation for event publisher just prints to console, but it would be nice to use RabbitMQ, but need more time to implement it.
-> - [ ] SQL operations are not using transactions for simplicity, will be added later.
+> - [x] SQL operations are not using transactions for simplicity, will be added later.
 > - [ ] `BasicAuth` is not used yet.
 > - [ ] request and response are not logged, but can be added later with middleware.

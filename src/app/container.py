@@ -7,9 +7,7 @@ from app.application.ports.code_store import CodeStore
 from app.application.ports.event_publisher import EventPublisher
 from app.config import settings
 from app.infrastructure.code_store.redis_code_store import RedisCodeStore
-from app.infrastructure.database.repositories.postgres_user_repository import (
-    PostgresUserRepository,
-)
+from app.infrastructure.database.postgres_unit_of_work import PostgresUnitOfWork
 from app.infrastructure.event_publisher.console_event_publisher import (
     ConsoleEventPublisher,
 )
@@ -21,14 +19,14 @@ class Container:
     """dependency injection container"""
 
     def __init__(self) -> None:
-        self._db_conn: asyncpg.Connection | None = None
+        self._db_pool: asyncpg.Pool | None = None
         self._redis_pool: redis.ConnectionPool | None = None
         self._redis: redis.Redis | None = None
         self._code_store: CodeStore | None = None
         self._event_publisher: EventPublisher | None = None
 
     async def init(self) -> None:
-        self._db_conn = await asyncpg.connect(settings.database_url)
+        self._db_pool = await asyncpg.create_pool(dsn=settings.database_url)
         self._redis_pool = redis.ConnectionPool.from_url(
             settings.redis_url,
             decode_responses=True,
@@ -42,9 +40,9 @@ class Container:
         self._event_publisher = ConsoleEventPublisher(self._code_store)
 
     async def close(self) -> None:
-        if self._db_conn is not None:
-            await self._db_conn.close()
-            self._db_conn = None
+        if self._db_pool is not None:
+            await self._db_pool.close()
+            self._db_pool = None
         if self._redis is not None:
             await self._redis.aclose()
             self._redis = None
@@ -55,10 +53,10 @@ class Container:
         self._event_publisher = None
 
     @property
-    def db_conn(self) -> asyncpg.Connection:
-        if self._db_conn is None:
+    def db_pool(self) -> asyncpg.Pool:
+        if self._db_pool is None:
             raise RuntimeError(CONTAINER_NOT_INIT_ERROR_MSG)
-        return self._db_conn
+        return self._db_pool
 
     @property
     def code_store(self) -> CodeStore:
@@ -72,10 +70,10 @@ class Container:
             raise RuntimeError(CONTAINER_NOT_INIT_ERROR_MSG)
         return self._event_publisher
 
-    def user_repository(self) -> PostgresUserRepository:
-        if self._db_conn is None:
+    def uow(self) -> PostgresUnitOfWork:
+        if self._db_pool is None:
             raise RuntimeError(CONTAINER_NOT_INIT_ERROR_MSG)
-        return PostgresUserRepository(self._db_conn)
+        return PostgresUnitOfWork(self._db_pool)
 
 
 container = Container()

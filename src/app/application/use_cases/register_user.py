@@ -4,7 +4,7 @@ from app.application.dto.user_dto import RegisterUserRequest, RegisterUserRespon
 from app.application.exceptions import UserAlreadyExistsError
 from app.application.ports.code_store import CodeStore
 from app.application.ports.event_publisher import EventPublisher
-from app.application.ports.user_repository import UserRepository
+from app.application.ports.unit_of_work import UnitOfWork
 from app.domain import User, VerificationCode
 
 
@@ -20,11 +20,11 @@ class RegisterUserUseCase:
 
     def __init__(
         self,
-        user_repository: UserRepository,
+        uow: UnitOfWork,
         code_store: CodeStore,
         event_publisher: EventPublisher,
     ) -> None:
-        self._user_repository: UserRepository = user_repository
+        self._uow: UnitOfWork = uow
         self._code_store: CodeStore = code_store
         self._event_publisher: EventPublisher = event_publisher
 
@@ -32,14 +32,16 @@ class RegisterUserUseCase:
         email = request.email
         password = request.password
 
-        if await self._user_repository.get_by_email(email):
-            raise UserAlreadyExistsError(email.value)
+        async with self._uow:
+            if await self._uow.user_repository.get_by_email(email):
+                raise UserAlreadyExistsError(email.value)
 
-        code = VerificationCode.generate()
-        await self._code_store.save(email, code)
-        user = User.create(email=email, password=password)
-        await self._user_repository.save(user)
-        await self._event_publisher.publish_all(user.collect_events())
+            user = User.create(email=email, password=password)
+            await self._uow.user_repository.save(user)
+            code = VerificationCode.generate()
+            await self._code_store.save(email, code)
+
+            await self._event_publisher.publish_all(user.collect_events())
 
         return RegisterUserResponse(
             user_id=user.id,

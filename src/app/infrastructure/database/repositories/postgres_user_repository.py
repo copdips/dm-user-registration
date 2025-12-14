@@ -52,11 +52,4 @@ class PostgresUserRepository:
         )
 
     def _row_to_entity(self, row: asyncpg.Record) -> User:
-        model = UserModel(
-            id=row["id"],
-            email=row["email"],
-            hashed_password=row["hashed_password"],
-            is_active=row["is_active"],
-            created_at=row["created_at"],
-        )
-        return UserMapper.to_entity(model)
+        return UserMapper.to_entity(UserModel.model_validate(dict(row)))

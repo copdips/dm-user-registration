@@ -14,7 +14,7 @@ from app.domain import (
 )
 from tests.unit.fakes.fake_code_store import FakeCodeStore
 from tests.unit.fakes.fake_event_publisher import FakeEventPublisher
-from tests.unit.fakes.fake_user_repository import FakeUserRepository
+from tests.unit.fakes.fake_unit_of_work import FakeUnitOfWork
 
 
 class TestResendCodeUseCase:
@@ -23,12 +23,12 @@ class TestResendCodeUseCase:
     @pytest.fixture
     def use_case(
         self,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         code_store: FakeCodeStore,
         event_publisher: FakeEventPublisher,
     ) -> ResendCodeUseCase:
         return ResendCodeUseCase(
-            user_repository=user_repository,
+            uow=uow,
             code_store=code_store,
             event_publisher=event_publisher,
         )
@@ -36,7 +36,7 @@ class TestResendCodeUseCase:
     @pytest.fixture
     async def registered_user(
         self,
-        user_repository: FakeUserRepository,
+        uow: FakeUnitOfWork,
         code_store: FakeCodeStore,
         code: VerificationCode,
     ) -> User:
@@ -47,7 +47,7 @@ class TestResendCodeUseCase:
         )
         await code_store.save(user.email, code)
         user.collect_events()  # Clear creation event
-        await user_repository.save(user)
+        await uow.user_repository.save(user)
         return user
 
     async def test_resend_code_success(

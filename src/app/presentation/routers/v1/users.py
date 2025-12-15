@@ -10,6 +10,7 @@ from app.application.dto.user_dto import (
 from app.domain import Email, Password, VerificationCode
 from app.presentation.dependencies import (
     ActivateUserUseCaseDep,
+    HTTPEmailPasswordBasicCredentialsDep,
     RegisterUserUseCaseDep,
     ResendCodeUseCaseDep,
 )
@@ -18,7 +19,6 @@ from app.presentation.schemas.users import (
     ActivateResponseSchema,
     RegisterRequestSchema,
     RegisterResponseSchema,
-    ResendCodeRequestSchema,
     ResendCodeResponseSchema,
 )
 
@@ -52,11 +52,12 @@ async def register_user(
 async def activate_user(
     request: ActivateRequestSchema,
     use_case: ActivateUserUseCaseDep,
+    credentials: HTTPEmailPasswordBasicCredentialsDep,
 ) -> ActivateResponseSchema:
     """Activate user account"""
     dto = ActivateUserRequest(
-        email=Email(request.email),
-        password=request.password,
+        email=Email(credentials.email),
+        password=credentials.password,
         code=VerificationCode(request.code),
     )
     result = await use_case.execute(dto)
@@ -74,13 +75,13 @@ async def activate_user(
     summary="Resend verification code",
 )
 async def resend_code(
-    request: ResendCodeRequestSchema,
     use_case: ResendCodeUseCaseDep,
+    credentials: HTTPEmailPasswordBasicCredentialsDep,
 ) -> ResendCodeResponseSchema:
     """Resend verification code"""
     dto = ResendCodeRequest(
-        Email(request.email),
-        request.password,
+        Email(credentials.email),
+        credentials.password,
     )
     result = await use_case.execute(dto)
 

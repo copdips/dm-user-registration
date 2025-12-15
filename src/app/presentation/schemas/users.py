@@ -20,8 +20,6 @@ class RegisterResponseSchema(BaseModel):
 
 
 class ActivateRequestSchema(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8, max_length=64)
     code: str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$")
 
 
@@ -30,11 +28,6 @@ class ActivateResponseSchema(BaseModel):
     email: EmailStr
     is_active: bool = True
     message: str = "Account activated successfully."
-
-
-class ResendCodeRequestSchema(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8, max_length=64)
 
 
 class ResendCodeResponseSchema(BaseModel):

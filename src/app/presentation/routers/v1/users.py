@@ -9,9 +9,9 @@ from app.application.dto.user_dto import (
 )
 from app.domain import Email, Password, VerificationCode
 from app.presentation.dependencies import (
-    activate_user_use_case,
-    register_user_use_case,
-    resend_code_use_case,
+    ActivateUserUseCaseDep,
+    RegisterUserUseCaseDep,
+    ResendCodeUseCaseDep,
 )
 from app.presentation.schemas.users import (
     ActivateRequestSchema,
@@ -30,10 +30,10 @@ router = APIRouter(prefix="/users", tags=["users"])
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
 )
-async def register_user(request: RegisterRequestSchema) -> RegisterResponseSchema:
+async def register_user(
+    request: RegisterRequestSchema, use_case: RegisterUserUseCaseDep
+) -> RegisterResponseSchema:
     """Register a new user"""
-    use_case = register_user_use_case()
-
     dto = RegisterUserRequest(Email(request.email), Password.create(request.password))
     result = await use_case.execute(dto)
 
@@ -51,10 +51,9 @@ async def register_user(request: RegisterRequestSchema) -> RegisterResponseSchem
 )
 async def activate_user(
     request: ActivateRequestSchema,
+    use_case: ActivateUserUseCaseDep,
 ) -> ActivateResponseSchema:
     """Activate user account"""
-    use_case = activate_user_use_case()
-
     dto = ActivateUserRequest(
         email=Email(request.email),
         password=request.password,
@@ -76,10 +75,9 @@ async def activate_user(
 )
 async def resend_code(
     request: ResendCodeRequestSchema,
+    use_case: ResendCodeUseCaseDep,
 ) -> ResendCodeResponseSchema:
     """Resend verification code"""
-    use_case = resend_code_use_case()
-
     dto = ResendCodeRequest(
         Email(request.email),
         request.password,

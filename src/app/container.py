@@ -1,5 +1,7 @@
 """Dependency injection container."""
 
+from collections.abc import AsyncGenerator
+
 import asyncpg
 import redis.asyncio as redis
 
@@ -70,10 +72,10 @@ class Container:
             raise RuntimeError(CONTAINER_NOT_INIT_ERROR_MSG)
         return self._event_publisher
 
-    def uow(self) -> PostgresUnitOfWork:
+    async def uow(self) -> AsyncGenerator[PostgresUnitOfWork]:
         if self._db_pool is None:
             raise RuntimeError(CONTAINER_NOT_INIT_ERROR_MSG)
-        return PostgresUnitOfWork(self._db_pool)
+        yield PostgresUnitOfWork(self._db_pool)
 
 
 container = Container()

@@ -14,7 +14,6 @@ from app.application.exceptions import (
     VerificationCodeInvalidError,
 )
 from app.domain.exceptions import (
-    DomainError,
     InvalidEmailError,
     InvalidPasswordError,
     InvalidVerificationCodeError,
@@ -25,11 +24,10 @@ EXCEPTION_AND_STATUS_CODE = [
     (UserNotFoundError, status.HTTP_404_NOT_FOUND),
     (InvalidCredentialsError, status.HTTP_401_UNAUTHORIZED),
     (VerificationCodeInvalidError, status.HTTP_400_BAD_REQUEST),
-    (VerificationCodeExpiredError, status.HTTP_400_BAD_REQUEST),
+    (VerificationCodeExpiredError, status.HTTP_410_GONE),
     (InvalidEmailError, status.HTTP_400_BAD_REQUEST),
     (InvalidPasswordError, status.HTTP_401_UNAUTHORIZED),
     (InvalidVerificationCodeError, status.HTTP_400_BAD_REQUEST),
-    (DomainError, status.HTTP_400_BAD_REQUEST),
 ]
 
 

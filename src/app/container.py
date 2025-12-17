@@ -44,6 +44,7 @@ class Container:
             settings.rabbitmq_exchange_name,
             settings.rabbitmq_queue_name,
             settings.rabbitmq_routing_key,
+            settings.rabbitmq_retry_seconds,
             self._code_store,
         )
         await self._rabbitmq_publisher.connect()

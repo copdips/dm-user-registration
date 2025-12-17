@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     rabbitmq_exchange_name: str = Field(default=...)
     rabbitmq_queue_name: str = Field(default=...)
     rabbitmq_routing_key: str = Field(default=...)
+    rabbitmq_retry_seconds: int = Field(default=2)
 
 
 settings = Settings()
@@ -80,7 +81,7 @@ def _install_sigint_handler(stop_event: asyncio.Event) -> asyncio.AbstractEventL
     return loop
 
 
-async def consume_messages(connection, queue_name: str) -> None:
+async def consume_messages(connection, queue_name: str) -> bool:
     addr_queue = AddressHelper.queue_address(queue_name)
     handler = MyMessageHandler()
     stop_event = asyncio.Event()
@@ -90,30 +91,29 @@ async def consume_messages(connection, queue_name: str) -> None:
     ) as consumer:
         loop = _install_sigint_handler(stop_event)
         try:
-            while True:
-                try:
-                    consumer_task = asyncio.create_task(consumer.run())
+            consumer_task = asyncio.create_task(consumer.run())
+            stop_task = asyncio.create_task(stop_event.wait())
 
-                    await stop_event.wait()
+            done, _pending = await asyncio.wait(
+                {consumer_task, stop_task},
+                return_when=asyncio.FIRST_COMPLETED,
+            )
 
-                    print("Stopping consumer...")
-                    await consumer.stop_processing()
-                    try:
-                        await asyncio.wait_for(consumer_task, timeout=3.0)
-                    except TimeoutError:
-                        print("Consumer task timed out")
+            if consumer_task in done:
+                await consumer_task
+                stop_event.set()
+            else:
+                await stop_event.wait()
 
-                    break
-
-                except ConnectionClosed:
-                    print("consumer connection closed, reconnecting...")
-                    await asyncio.sleep(1)
-                    continue
-                except Exception as exc:  # noqa: BLE001 blind-except
-                    print("consumer exited for exception " + str(exc))
-                    break
+            print("Stopping consumer...")
+            await consumer.stop_processing()
+            try:
+                await asyncio.wait_for(consumer_task, timeout=3.0)
+            except TimeoutError:
+                print("Consumer task timed out")
         finally:
             loop.remove_signal_handler(signal.SIGINT)
+    return stop_event.is_set()
 
 
 async def main() -> None:
@@ -121,20 +121,36 @@ async def main() -> None:
     queue_name = settings.rabbitmq_queue_name
     routing_key = settings.rabbitmq_routing_key
 
-    async with (
-        AsyncEnvironment(uri=settings.rabbitmq_url) as environment,
-        await environment.connection() as connection,
-        await connection.management() as management,
-    ):
-        await declare_topology(
-            management,
-            exchange_name=exchange_name,
-            queue_name=queue_name,
-            routing_key=routing_key,
-        )
+    while True:
+        try:
+            async with (
+                AsyncEnvironment(uri=settings.rabbitmq_url) as environment,
+                await environment.connection() as connection,
+                await connection.management() as management,
+            ):
+                await declare_topology(
+                    management,
+                    exchange_name=exchange_name,
+                    queue_name=queue_name,
+                    routing_key=routing_key,
+                )
 
-        print("RabbitMQ consumer is running - press `CTRL + C` to terminate.")
-        await consume_messages(connection, queue_name)
+                print("RabbitMQ consumer is running - press `CTRL + C` to terminate.")
+                stopped_by_signal = await consume_messages(connection, queue_name)
+                if stopped_by_signal:
+                    break
+        except ConnectionClosed:
+            print(
+                f"Connection closed, retrying in {settings.rabbitmq_retry_seconds} seconds..."
+            )
+            await asyncio.sleep(settings.rabbitmq_retry_seconds)
+        except Exception as exc:  # noqa: BLE001 blind-except
+            print(
+                f"Unexpected consumer error: {exc}, "
+                f"retrying in {settings.rabbitmq_retry_seconds} seconds..."
+            )
+            await asyncio.sleep(settings.rabbitmq_retry_seconds)
+            continue
 
 
 if __name__ == "__main__":

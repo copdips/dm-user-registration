@@ -1,5 +1,6 @@
 """RabbitMQ implementation of EventPublisher port."""
 
+import asyncio
 import json
 from typing import Any
 
@@ -9,6 +10,7 @@ from rabbitmq_amqp_python_client import (
     AsyncEnvironment,
     AsyncManagement,
     AsyncPublisher,
+    ConnectionClosed,
     Converter,
     ExchangeSpecification,
     ExchangeToQueueBindingSpecification,
@@ -38,12 +40,14 @@ class RabbitMQEventPublisher:
         exchange_name: str,
         queue_name: str,
         routing_key: str,
+        retry_seconds: int,
         code_store: CodeStore,
     ) -> None:
         self._rabbitmq_url = url
         self._exchange_name = exchange_name
         self._queue_name = queue_name
         self._routing_key = routing_key
+        self._retry_seconds = retry_seconds
         self._code_store: CodeStore = code_store
         self._environment: AsyncEnvironment = None
         self._connection: AsyncConnection = None
@@ -87,11 +91,20 @@ class RabbitMQEventPublisher:
     async def publish(self, event: DomainEvent) -> None:
         message_str = await self._serialize_event(event)
         # print("Publishing message:", message_str)
-        await self._publisher.publish(
-            Message(
-                body=Converter.string_to_bytes(message_str),
+        try:
+            await self._publisher.publish(
+                Message(
+                    body=Converter.string_to_bytes(message_str),
+                )
             )
-        )
+        except ConnectionClosed:
+            await asyncio.sleep(self._retry_seconds)
+            await self.connect()
+            await self._publisher.publish(
+                Message(
+                    body=Converter.string_to_bytes(message_str),
+                )
+            )
 
     async def publish_all(self, events: list[DomainEvent]) -> None:
         for event in events:

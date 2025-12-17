@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     rabbitmq_exchange_name: str = Field(default=...)
     rabbitmq_queue_name: str = Field(default=...)
     rabbitmq_routing_key: str = Field(default=...)
+    rabbitmq_retry_seconds: int = Field(default=2)
 
     # Verification code
     verification_code_ttl_seconds: int = 60

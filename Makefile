@@ -22,11 +22,8 @@ test: test-unit test-integration
 fast-test: start-docker-compose
 	uv run pytest --ignore=tests/unit/domain/value_objects/test_password.py --ignore=tests/unit/domain/entities/test_user.py
 
-run: start-docker-compose
-	uv run uvicorn ${API_FOLDER}.main:app --reload
-
-layout:
-	git ls-files | grep -v '__init__\.py$$' | tree --fromfile
+init-db: start-docker-compose
+	PGPASSWORD=password psql -h localhost -U user -d registration -f scripts/init_db.sql
 
 start-docker-compose:
 	docker compose build && docker compose up -d
@@ -34,8 +31,14 @@ start-docker-compose:
 stop-docker-compose:
 	docker compose down
 
-init-db: start-docker-compose
-	PGPASSWORD=password psql -h localhost -U user -d registration -f scripts/init_db.sql
+start-rabbitmq-consumer:
+	uv run python scripts/rabbitmq_consumer.py
+
+run: start-docker-compose
+	uv run uvicorn ${API_FOLDER}.main:app --reload
+
+layout:
+	git ls-files | grep -v '__init__\.py$$' | tree --fromfile
 
 sql-shell: start-docker-compose
 	PGPASSWORD=password psql -h localhost -U user -d registration

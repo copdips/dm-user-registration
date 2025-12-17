@@ -46,6 +46,12 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = Field(default=...)
 
+    # RabbitMQ
+    rabbitmq_url: str = Field(default=...)
+    rabbitmq_exchange_name: str = Field(default=...)
+    rabbitmq_queue_name: str = Field(default=...)
+    rabbitmq_routing_key: str = Field(default=...)
+
     # Verification code
     verification_code_ttl_seconds: int = 60
 

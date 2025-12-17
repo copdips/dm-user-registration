@@ -10,8 +10,8 @@ from app.application.ports.event_publisher import EventPublisher
 from app.config import settings
 from app.infrastructure.code_store.redis_code_store import RedisCodeStore
 from app.infrastructure.database.postgres_unit_of_work import PostgresUnitOfWork
-from app.infrastructure.event_publisher.console_event_publisher import (
-    ConsoleEventPublisher,
+from app.infrastructure.event_publisher.rabbitmq_event_publisher import (
+    RabbitMQEventPublisher,
 )
 
 CONTAINER_NOT_INIT_ERROR_MSG = "Container not initialized. Call init() first."
@@ -24,6 +24,7 @@ class Container:
         self._db_pool: asyncpg.Pool | None = None
         self._redis_pool: redis.ConnectionPool | None = None
         self._redis: redis.Redis | None = None
+        self._rabbitmq_publisher: RabbitMQEventPublisher | None = None
         self._code_store: CodeStore | None = None
         self._event_publisher: EventPublisher | None = None
 
@@ -38,8 +39,15 @@ class Container:
         self._code_store = RedisCodeStore(
             self._redis, ttl_seconds=settings.verification_code_ttl_seconds
         )
-
-        self._event_publisher = ConsoleEventPublisher(self._code_store)
+        self._rabbitmq_publisher = RabbitMQEventPublisher(
+            settings.rabbitmq_url,
+            settings.rabbitmq_exchange_name,
+            settings.rabbitmq_queue_name,
+            settings.rabbitmq_routing_key,
+            self._code_store,
+        )
+        await self._rabbitmq_publisher.connect()
+        self._event_publisher = self._rabbitmq_publisher
 
     async def close(self) -> None:
         if self._db_pool is not None:
@@ -51,6 +59,9 @@ class Container:
         if self._redis_pool is not None:
             await self._redis_pool.aclose()
             self._redis_pool = None
+        if self._rabbitmq_publisher is not None:
+            await self._rabbitmq_publisher.close()
+            self._rabbitmq_publisher = None
         self._code_store = None
         self._event_publisher = None
 

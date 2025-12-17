@@ -11,6 +11,7 @@
     - [Install](#install)
     - [Test](#test)
     - [Run application](#run-application)
+  - [To do list](#to-do-list)
 
 ## Context
 
@@ -40,12 +41,14 @@ flowchart LR
   User["Client"]
   API["User Registration API"]
   DB["PostgreSQL<br/>users table"]
-  Cache["Redis<br/>verification codes (TTL)"]
-  Events["Console Event Publisher<br/>simulated email send"]
+  Cache["Redis<br/>verification codes with TTL"]
+  Broker["RabbitMQ<br/>event publisher"]
+  Consumer["RabbitMQ consumer<br/>standalone script"]
   User --> API
   API --> DB
   API --> Cache
-  API --> Events
+  API --> Broker
+  Broker --> Consumer
 ```
 
 ### Lower level architecture
@@ -60,18 +63,19 @@ flowchart TD
   UseCases --> Repo["UserRepository port"]
   UseCases --> Store["CodeStore port"]
   UseCases --> Pub["EventPublisher port"]
-  Repo --> Postgres["(Postgres users table<br/>via asyncpg repo)"]
-  Store --> Redis["(Redis TTL verification codes)"]
-  Pub --> Console["Console event publisher<br/>simulated email sending"]
+  Repo --> Postgres["PostgresUserRepository<br/>via asyncpg"]
+  Store --> Redis["RedisCodeStore<br/>with TTL"]
+  Pub --> Rabbit["RabbitMQEventPublisher"]
+  Rabbit --> ExternalConsumer["RabbitMQ consumer<br/>standalone script"]
   Store -.-> Pub
 ```
 
 ## Layout
 
 ```plaintext
-├── .env.example
 ├── scripts
-│   └── init_db.sql
+│   ├── init_db.sql
+│   └── rabbitmq_consumer.py
 ├── src
 │   └── app
 │       ├── application
@@ -81,6 +85,7 @@ flowchart TD
 │       │   ├── ports
 │       │   │   ├── code_store.py
 │       │   │   ├── event_publisher.py
+│       │   │   ├── unit_of_work.py
 │       │   │   └── user_repository.py
 │       │   └── use_cases
 │       │       ├── activate_user.py
@@ -109,10 +114,12 @@ flowchart TD
 │       │   │   │   └── user_mapper.py
 │       │   │   ├── models
 │       │   │   │   └── user_model.py
+│       │   │   ├── postgres_unit_of_work.py
 │       │   │   └── repositories
 │       │   │       └── postgres_user_repository.py
 │       │   └── event_publisher
-│       │       └── console_event_publisher.py
+│       │       ├── console_event_publisher.py
+│       │       └── rabbitmq_event_publisher.py
 │       ├── main.py
 │       └── presentation
 │           ├── dependencies.py
@@ -145,6 +152,7 @@ flowchart TD
 │       └── fakes
 │           ├── fake_code_store.py
 │           ├── fake_event_publisher.py
+│           ├── fake_unit_of_work.py
 │           └── fake_user_repository.py
 ```
 
@@ -178,6 +186,9 @@ make init-db
 # Create .env file from .env.example: (only need to run once)
 cp .env.example .env
 
+# Start RabbitMQ consumer
+make start-rabbitmq-consumer
+
 # Run application:
 make run
 
@@ -188,9 +199,9 @@ make run
 make stop-docker-compose
 ```
 
-> [!NOTE]
->
-> - [ ] Current implementation for event publisher just prints to console, but it would be nice to use RabbitMQ, but need more time to implement it.
-> - [x] SQL operations are not using transactions for simplicity, will be added later.
-> - [x] `BasicAuth` is not used yet. OpenAPI asks for username/password in the docs, provide email as username.
-> - [ ] request and response are not logged, but can be added later with middleware.
+## To do list
+
+- [x] Current implementation for event publisher just prints to console, but it would be nice to use RabbitMQ, but need more time to implement it.
+- [x] SQL operations are not using transactions for simplicity, will be added later.
+- [x] `BasicAuth` is not used yet. OpenAPI asks for username/password in the docs, provide email as username.
+- [ ] request and response are not logged, but can be added later with middleware.
